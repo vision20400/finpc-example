@@ -1,0 +1,12 @@
+# IDEs
+.idea/
+.vscode/
+.*.sw[o|p]
+
+# MAC
+.DS_Store
+
+# credentials
+*.crt
+*.key
+*.pem

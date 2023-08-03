@@ -1,0 +1,95 @@
+name: Deploy client
+
+on:
+  push:
+    paths:
+      - .github/workflows/client.yml
+      - client/**
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      WORKDIR: ./client
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Get yarn cache
+      id:   yarn-cache-dir
+      run:  echo "::set-output name=dir::$(yarn cache dir)"
+
+    - name: Cache node modules
+      id:   yarn-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.yarn-cache-dir.outputs.dir }}
+        key:  ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
+    - if:   ${{ steps.yarn-cache.outputs.cache-hit != 'true' }}
+      name: List the state of node modules
+      run:  yarn list
+      continue-on-error: true
+
+    - name: Install dependencies
+      run: yarn install
+      working-directory: ${{ env.WORKDIR }}
+
+    - name: Build
+      run: yarn build
+      working-directory: ${{ env.WORKDIR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Login to AWS ECR
+      id:   ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Get docker metadata
+      id:   meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ steps.ecr.outputs.registry }}/client
+        tags: |
+          type=sha,prefix=,suffix=-{{date 'YYYYMMDD-HHmmss' tz='Asia/Seoul'}}
+        flavor: |
+          latest=true
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./client
+        push:    true
+        tags:    ${{ steps.meta.outputs.tags }}
+        labels:  ${{ steps.meta.outputs.labels }}
+
+    - name: Get AWS ECS task definition
+      run:  |
+        aws ecs describe-task-definition \
+            --task-definition finpc-client \
+            --query taskDefinition > task-definition.json
+      working-directory: ${{ env.WORKDIR }}
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id:   task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: client/task-definition.json
+        container-name: client
+        image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: client
+        cluster: finpc
+        wait-for-service-stability: true
