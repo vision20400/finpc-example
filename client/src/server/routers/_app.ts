@@ -7,7 +7,6 @@ const port = process.env.GRPC_PORT || '9095';
 const creds = process.env.GRPC_INSECURE === 'true' ?
     credentials.createInsecure() :
     credentials.createSsl(Buffer.from(process.env.GRPC_CACERT || '', 'base64'));
-//credentials.createSsl(Buffer.from(rootCert));
 const opts = process.env.GRPC_HOST_OVERRIDE ? {
     'grpc.ssl_target_name_override': process.env.GRPC_HOST_OVERRIDE,
     'grpc.default_authority': process.env.GRPC_HOST_OVERRIDE

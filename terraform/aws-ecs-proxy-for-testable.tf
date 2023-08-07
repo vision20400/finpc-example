@@ -125,7 +125,7 @@ resource aws_security_group proxy {
     from_port   = local.postgres_port
     to_port     = local.postgres_port
     protocol    = "tcp"
-    cidr_blocks = [var.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
