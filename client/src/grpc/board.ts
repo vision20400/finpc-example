@@ -735,8 +735,8 @@ export const BoardService = {
     path: "/board.Board/Like",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Likes) => Buffer.from(Likes.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Likes.decode(value),
+    requestSerialize: (value: QuestionId) => Buffer.from(QuestionId.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => QuestionId.decode(value),
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
@@ -744,8 +744,8 @@ export const BoardService = {
     path: "/board.Board/Unlike",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Likes) => Buffer.from(Likes.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Likes.decode(value),
+    requestSerialize: (value: QuestionId) => Buffer.from(QuestionId.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => QuestionId.decode(value),
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
@@ -759,8 +759,8 @@ export interface BoardServer extends UntypedServiceImplementation {
   deleteQuestion: handleUnaryCall<QuestionId, Empty>;
   getQuestion: handleUnaryCall<QuestionId, Question>;
   listQuestion: handleUnaryCall<SubjectId, QuestionList>;
-  like: handleUnaryCall<Likes, Empty>;
-  unlike: handleUnaryCall<Likes, Empty>;
+  like: handleUnaryCall<QuestionId, Empty>;
+  unlike: handleUnaryCall<QuestionId, Empty>;
 }
 
 export interface BoardClient extends Client {
@@ -857,26 +857,26 @@ export interface BoardClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: QuestionList) => void,
   ): ClientUnaryCall;
-  like(request: Likes, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
+  like(request: QuestionId, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
   like(
-    request: Likes,
+    request: QuestionId,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
   like(
-    request: Likes,
+    request: QuestionId,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
-  unlike(request: Likes, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
+  unlike(request: QuestionId, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
   unlike(
-    request: Likes,
+    request: QuestionId,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
   unlike(
-    request: Likes,
+    request: QuestionId,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
